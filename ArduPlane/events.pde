@@ -65,9 +65,9 @@ static void failsafe_long_on_event(enum failsafe_state fstype)
     case TRAINING:
     case CIRCLE:
         if(g.long_fs_action == 2) {
-            set_mode(FLY_BY_WIRE_A);
+            set_mode(TERMINATE);
         } else {
-            set_mode(RTL);  //replace with 'Terminate'
+            set_mode(TERMINATE);
         }
         break;
 
