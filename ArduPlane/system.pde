@@ -336,6 +336,10 @@ static void set_mode(enum FlightMode mode)
         do_RTL();
         break;
 
+    case TERMINATE: //adds terminate flight mode, for termination failsafe
+        do_TERMINATE();  //method in commands_logic.pde
+        break;
+
     case LOITER:
         do_loiter_at_location();
         break;

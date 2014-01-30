@@ -250,6 +250,18 @@ static void do_RTL(void)
         Log_Write_Mode(control_mode);
 }
 
+//method for TERMINATE flight mode, for failsafe
+static void do_TERMINATE(void)
+{
+    control_mode    = TERMINATE;
+//add in code to manualy set wing thing servos to deth spiral positions
+
+
+
+    if (should_log(MASK_LOG_MODE))
+        Log_Write_Mode(control_mode);
+}
+
 static void do_takeoff()
 {
     set_next_WP(&next_nav_command);

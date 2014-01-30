@@ -77,6 +77,7 @@ enum FlightMode {
     AUTO          = 10,
     RTL           = 11,
     LOITER        = 12,
+    TERMINATE     = 13,
     GUIDED        = 15,
     INITIALISING  = 16
 };
