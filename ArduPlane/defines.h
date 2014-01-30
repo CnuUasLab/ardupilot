@@ -74,10 +74,10 @@ enum FlightMode {
     FLY_BY_WIRE_A = 5,
     FLY_BY_WIRE_B = 6,
     CRUISE        = 7,
+    TERMINATE     = 8,
     AUTO          = 10,
     RTL           = 11,
     LOITER        = 12,
-    TERMINATE     = 13,
     GUIDED        = 15,
     INITIALISING  = 16
 };
