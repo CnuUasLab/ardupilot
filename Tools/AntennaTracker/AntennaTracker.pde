@@ -225,6 +225,7 @@ void setup()
     AP_Notify::flags.failsafe_battery = false;
 
     notify.init(false);  //ERROR no mactching function
+
 //   AP_Notify::init(false);
     init_tracker();
 
