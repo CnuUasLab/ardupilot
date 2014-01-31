@@ -197,7 +197,7 @@ static void NOINLINE send_statustext(mavlink_channel_t chan)
 
 static void NOINLINE send_nav_controller_output(mavlink_channel_t chan)
 {
-    mavlink_msg_nav_controller_output_send(
+    mavlink_msg_nav_controller_output_send(  //MARK
         chan,
         0,
         nav_status.pitch,

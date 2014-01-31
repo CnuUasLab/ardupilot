@@ -61,7 +61,7 @@ static void update_tracking(void)
     update_yaw_servo(bearing);
 
     // update nav_status for NAV_CONTROLLER_OUTPUT
-    nav_status.bearing  = bearing;
+    nav_status.bearing  = bearing;  //MARK
     nav_status.pitch    = pitch;
     nav_status.distance = distance;
 }
