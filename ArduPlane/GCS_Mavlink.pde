@@ -55,7 +55,7 @@ static NOINLINE void send_heartbeat(mavlink_channel_t chan)
     case CRUISE:
         base_mode = MAV_MODE_FLAG_STABILIZE_ENABLED;
         break;
-    case TERMINATE:
+
     case AUTO:
     case RTL:
     case LOITER:
