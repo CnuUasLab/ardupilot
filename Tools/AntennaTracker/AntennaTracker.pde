@@ -224,8 +224,8 @@ void setup()
     AP_Notify::flags.pre_arm_check = true;
     AP_Notify::flags.failsafe_battery = false;
 
-//    notify.init();  ERROR no mactching function
-    AP_Notify::init(false);
+    notify.init(false);  //ERROR no mactching function
+//   AP_Notify::init(false);
     init_tracker();
 
     // initialise the main loop scheduler
