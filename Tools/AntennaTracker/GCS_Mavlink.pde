@@ -107,8 +107,9 @@ static void NOINLINE send_radio_out(mavlink_channel_t chan)
 
 static void NOINLINE send_raw_imu1(mavlink_channel_t chan)
 {
-    Vector3f accel = ins.get_accel();
-    Vector3f gyro = ins.get_gyro();
+     const Vector3f &accel = ins.get_accel();
+     const Vector3f &gyro = ins.get_gyro();
+     const Vector3f &mag = compass.get_field();
 
     mavlink_msg_raw_imu_send(
         chan,
@@ -119,9 +120,9 @@ static void NOINLINE send_raw_imu1(mavlink_channel_t chan)
         gyro.x * 1000.0,
         gyro.y * 1000.0,
         gyro.z * 1000.0,
-        compass.mag_x,
-        compass.mag_y,
-        compass.mag_z);
+        mag_x,
+        mag_y,
+        mag_z);
 }
 
 static void NOINLINE send_raw_imu2(mavlink_channel_t chan)

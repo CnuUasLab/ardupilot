@@ -162,7 +162,8 @@ AP_InertialSensor_L3G4200D ins;
   #error Unrecognised CONFIG_INS_TYPE setting.
 #endif // CONFIG_INS_TYPE
 
-AP_AHRS_DCM ahrs(&ins, g_gps);
+    AP_AHRS_DCM ahrs(ins, g_gps);  
+//end filler code
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_AVR_SITL
 SITL sitl;
@@ -223,7 +224,8 @@ void setup()
     AP_Notify::flags.pre_arm_check = true;
     AP_Notify::flags.failsafe_battery = false;
 
-    notify.init();
+//    notify.init();  ERROR no mactching function
+    AP_Notify::init(false);
     init_tracker();
 
     // initialise the main loop scheduler
