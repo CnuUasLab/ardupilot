@@ -120,9 +120,9 @@ static void NOINLINE send_raw_imu1(mavlink_channel_t chan)
         gyro.x * 1000.0,
         gyro.y * 1000.0,
         gyro.z * 1000.0,
-        mag_x,
-        mag_y,
-        mag_z);
+        mag.x,
+        mag.y,
+        mag.z);
 }
 
 static void NOINLINE send_raw_imu2(mavlink_channel_t chan)
