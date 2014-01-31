@@ -257,8 +257,8 @@ static void do_TERMINATE(void)
 //add in code to manualy set wing thing servos to deth spiral positions
 
     // do_set_servo(channel, pwm)
-   ServoRelayEvents.do_set_servo() //sets left airleron
-   ServoRelayEvents.do_set_servo() //sets right aileron
+   ServoRelayEvents.do_set_servo(1, 1300) //sets left airleron
+   ServoRelayEvents.do_set_servo(2, 1300) //sets right aileron
 
     // do_repeat_servo(_channel, _servo_value, _repeat, _delay_ms)
 
