@@ -55,6 +55,7 @@ static NOINLINE void send_heartbeat(mavlink_channel_t chan)
     case CRUISE:
         base_mode = MAV_MODE_FLAG_STABILIZE_ENABLED;
         break;
+    case TERMINATE:
     case AUTO:
     case RTL:
     case LOITER:
@@ -69,6 +70,8 @@ static NOINLINE void send_heartbeat(mavlink_channel_t chan)
     case INITIALISING:
         system_status = MAV_STATE_CALIBRATING;
         break;
+    case TERMINATE:
+        system_status = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
     }
 
     if (!training_manual_pitch || !training_manual_roll) {
@@ -185,6 +188,7 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan)
         }
         break;
 
+    case TERMINATE:
     case AUTO:
     case RTL:
     case LOITER:

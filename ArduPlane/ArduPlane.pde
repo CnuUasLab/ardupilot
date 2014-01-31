@@ -1315,6 +1315,9 @@ static void update_flight_mode(void)
     case INITIALISING:
         // handled elsewhere
         break;
+    case TERMINATE:
+        //No need to update, just keep crashing into the ground
+        break;
     }
 }
 
@@ -1345,6 +1348,7 @@ static void update_navigation()
         update_cruise();
         break;
 
+    case TERMINATE:
     case MANUAL:
     case STABILIZE:
     case TRAINING:
