@@ -1,23 +1,16 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+#define GPS_PROTOCOL    3               // 0 = NMEA
+                                        // 1 = SIRF, 
+                                        // 2 = uBlox                                                                    // 3 = ArduIMU
+                                        // 4 = MediaTek,                                                                // 5 = Simulated GPS mode (Debug), 
+                                        // -1 = no GPS                                                                                                                                                                                          //0-4 Ground Control Station:
+#define GCS_PROTOCOL    3               // 0 = Standard ArduPilot (LabVIEW/HappyKillmore),
+                                        // 1 = special test, 
+                                        // 2 = Ardupilot Binary(not implemented),                                       // 3 = Xplane
+                                        // 5 = Jason's GCS,
+                                        // -1 = no GCS (no telemetry output)
+                                        
+#define HIL_MODE        HIL_MODE_SENSORS
 
-// This file is just a placeholder for your configuration file.  If
-// you wish to change any of the setup parameters from their default
-// values, place the appropriate #define statements here.
-
-// If you used to define your CONFIG_APM_HARDWARE setting here, it is no
-// longer valid! You should switch to using CONFIG_HAL_BOARD via the HAL_BOARD
-// flag in your local config.mk instead.
-
-// The following are the recommended settings for Xplane
-// simulation. Remove the leading "/* and trailing "*/" to enable:
-
-//#define HIL_MODE            HIL_MODE_DISABLED
-
-/*
- *  // HIL_MODE SELECTION
- *  //
- *  // Mavlink supports
- *  // 2. HIL_MODE_SENSORS: full sensor simulation
- *
- */
-
+#define HIL_PORT            0
+#define GCS_PROTOCOL        GCS_PROTOCOL_MAVLINK
+#define GCS_PORT            3
