@@ -15,12 +15,8 @@
 
 class PX4::PX4Storage : public AP_HAL::Storage {
 public:
-    PX4Storage() :
-	_fd(-1),
-	_dirty_mask(0),
-	_perf_storage(perf_alloc(PC_ELAPSED, "APM_storage")),
-	_perf_errors(perf_alloc(PC_COUNT, "APM_storage_errors"))
-	{}
+    PX4Storage();
+
     void init(void* machtnichts) {}
     uint8_t  read_byte(uint16_t loc);
     uint16_t read_word(uint16_t loc);
@@ -30,7 +26,7 @@ public:
     void write_byte(uint16_t loc, uint8_t value);
     void write_word(uint16_t loc, uint16_t value);
     void write_dword(uint16_t loc, uint32_t value);
-    void write_block(uint16_t dst, void* src, size_t n);
+    void write_block(uint16_t dst, const void* src, size_t n);
 
     void _timer_tick(void);
 
@@ -40,10 +36,14 @@ private:
     void _storage_create(void);
     void _storage_open(void);
     void _mark_dirty(uint16_t loc, uint16_t length);
-    uint8_t _buffer[PX4_STORAGE_SIZE];
+    uint8_t _buffer[PX4_STORAGE_SIZE] __attribute__((aligned(4)));
     volatile uint32_t _dirty_mask;
     perf_counter_t  _perf_storage;
     perf_counter_t  _perf_errors;
+    bool _have_mtd;
+    void _upgrade_to_mtd(void);
+    uint32_t _mtd_signature(void);
+    void _mtd_write_signature(void);
 };
 
 #endif // __AP_HAL_PX4_STORAGE_H__

@@ -1,4 +1,4 @@
-// -*- tab-width: 4; Mode: C++; c-basic-offset: 3; indent-tabs-mode: t -*-
+// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
 #ifndef __AP_RANGEFINDER_MAXSONARI2CXL_H__
 #define __AP_RANGEFINDER_MAXSONARI2CXL_H__
@@ -29,7 +29,7 @@ public:
     bool            take_reading();
 
     // read value from sensor and return distance in cm
-    int             read();
+    int16_t         read();
 
     // heath
     bool            healthy;

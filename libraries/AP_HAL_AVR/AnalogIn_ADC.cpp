@@ -12,13 +12,15 @@ using namespace AP_HAL_AVR;
 extern const AP_HAL::HAL& hal;
 
 ADCSource::ADCSource(uint8_t pin) :
-    _pin(pin),
-    _stop_pin(ANALOG_INPUT_NONE),
     _sum_count(0),
     _sum(0),
-    _settle_time_ms(0),
-    _last_average(0)
-{}
+    _last_average(0),
+    _pin(ANALOG_INPUT_NONE),
+    _stop_pin(ANALOG_INPUT_NONE),
+    _settle_time_ms(0)
+{
+    set_pin(pin);
+}
 
 float ADCSource::read_average() {
     if (_pin == ANALOG_INPUT_BOARD_VCC) {
@@ -59,6 +61,26 @@ float ADCSource::voltage_average(void)
 }
 
 /*
+  return voltage from 0.0 to 5.0V, scaled to Vcc
+ */
+float ADCSource::voltage_latest(void)
+{
+    if (_pin == ANALOG_INPUT_BOARD_VCC) {
+        return read_latest() * 0.001f;
+    }
+    float vcc_mV = hal.analogin->channel(ANALOG_INPUT_BOARD_VCC)->read_average();
+    float v = read_latest();
+    // constrain Vcc reading so that a bad Vcc doesn't throw off
+    // the reading of other sources too badly
+    if (vcc_mV < 4000) {
+        vcc_mV = 4000;
+    } else if (vcc_mV > 6000) {
+        vcc_mV = 6000;
+    }
+    return v * vcc_mV * 9.765625e-7; // 9.765625e-7 = 1.0/(1024*1000)
+}
+
+/*
   return voltage from 0.0 to 5.0V, assuming a ratiometric sensor. This
   means the result is really a pseudo-voltage, that assumes the supply
   voltage is exactly 5.0V.
@@ -70,7 +92,26 @@ float ADCSource::voltage_average_ratiometric(void)
 }
 
 void ADCSource::set_pin(uint8_t pin) {
-    _pin = pin;
+    if (pin != _pin) {
+        // ensure the pin is marked as an INPUT pin
+        if (pin != ANALOG_INPUT_NONE && pin != ANALOG_INPUT_BOARD_VCC) {
+            int8_t dpin = hal.gpio->analogPinToDigitalPin(pin);
+            if (dpin != -1) {
+                // enable as input without a pull-up. This gives the
+                // best results for our analog sensors
+                hal.gpio->pinMode(dpin, GPIO_INPUT);
+                hal.gpio->write(dpin, 0);
+            }
+        }
+        uint8_t sreg = SREG;
+        cli();
+        _sum = 0;
+        _sum_count = 0;
+        _last_average = 0;
+        _latest = 0;
+        _pin = pin;
+        SREG = sreg;
+    }
 }
 
 void ADCSource::set_stop_pin(uint8_t pin) {

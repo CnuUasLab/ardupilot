@@ -1,11 +1,20 @@
 // -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
-//
-// This is free software; you can redistribute it and/or modify it under
-// the terms of the GNU Lesser General Public License as published by the
-// Free Software Foundation; either version 2.1 of the License, or (at
-// your option) any later version.
-//
+/*
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+//
 /// @file	AP_Param.h
 /// @brief	A system for managing and storing variables that are of
 ///			general interest to the system.
@@ -83,6 +92,12 @@ public:
             const float def_value;
         };
     };
+    struct ConversionInfo {
+        uint8_t old_key; // k_param_*
+        uint8_t old_group_element; // index in old object
+        enum ap_var_type type; // AP_PARAM_*
+        const char new_name[AP_MAX_NAME_SIZE+1];        
+    };
 
     // called once at startup to setup the _var_info[] table. This
     // will also check the EEPROM header and re-initialise it if the
@@ -97,8 +112,6 @@ public:
         uint16_t i;
         for (i=0; pgm_read_byte(&info[i].type) != AP_PARAM_NONE; i++) ;
         _num_vars = i;
-        
-        check_var_info();
     }
 
     // empty constructor
@@ -137,6 +150,7 @@ public:
     ///                         it does not exist.
     ///
     static AP_Param * find(const char *name, enum ap_var_type *ptype);
+    static AP_Param * find_P(const prog_char_t *name, enum ap_var_type *ptype);
 
     /// Find a variable by index.
     ///
@@ -157,9 +171,11 @@ public:
 
     /// Save the current value of the variable to EEPROM.
     ///
+    /// @param  force_save     If true then force save even if default
+    ///
     /// @return                True if the variable was saved successfully.
     ///
-    bool save(void);
+    bool save(bool force_save=false);
 
     /// Load the variable from EEPROM.
     ///
@@ -186,6 +202,9 @@ public:
     // load default values for all scalars in the main sketch. This
     // does not recurse into the sub-objects    
     static void         setup_sketch_defaults(void);
+
+    // convert old vehicle parameters to new object parameters
+    static void         convert_old_parameters(const struct ConversionInfo *conversion_table, uint8_t table_size);
 
     /// Erase all variables in EEPROM.
     ///
@@ -223,6 +242,9 @@ public:
 
     /// cast a variable to a float given its type
     float                   cast_to_float(enum ap_var_type type) const;
+
+    // check var table for consistency
+    static bool             check_var_info(void);
 
 private:
     /// EEPROM header
@@ -264,7 +286,6 @@ private:
 
     static bool                 check_group_info(const struct GroupInfo *group_info, uint16_t *total_size, uint8_t max_bits);
     static bool                 duplicate_key(uint8_t vindex, uint8_t key);
-    static bool                 check_var_info(void);
     const struct Info *         find_var_info_group(
                                     const struct GroupInfo *    group_info,
                                     uint8_t                     vindex,
@@ -300,7 +321,7 @@ private:
                                     const struct GroupInfo *group_info,
                                     enum ap_var_type *ptype);
     static void                 write_sentinal(uint16_t ofs);
-    bool                        scan(
+    static bool                 scan(
                                     const struct Param_header *phdr,
                                     uint16_t *pofs);
     static uint8_t				type_size(enum ap_var_type type);
@@ -325,6 +346,9 @@ private:
     static const uint8_t        k_EEPROM_magic0      = 0x50;
     static const uint8_t        k_EEPROM_magic1      = 0x41; ///< "AP"
     static const uint8_t        k_EEPROM_revision    = 6; ///< current format revision
+
+    // convert old vehicle parameters to new object parameters
+    static void         convert_old_parameter(const struct ConversionInfo *info);
 };
 
 /// Template class for scalar variables.
@@ -356,8 +380,9 @@ public:
     /// Combined set and save
     ///
     bool set_and_save(const T &v) {
+        bool force = (_value != v);
         set(v);
-        return save();
+        return save(force);
     }
 
     /// Combined set and save, but only does the save if the value if
@@ -370,7 +395,7 @@ public:
             return true;
         }
         set(v);
-        return save();
+        return save(true);
     }
 
     /// Conversion to T returns a reference to the value.
@@ -451,8 +476,9 @@ public:
     /// Combined set and save
     ///
     bool set_and_save(const T &v) {
+        bool force = (_value != v);
         set(v);
-        return save();
+        return save(force);
     }
 
     /// Conversion to T returns a reference to the value.

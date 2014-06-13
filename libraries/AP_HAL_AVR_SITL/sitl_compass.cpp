@@ -31,11 +31,17 @@ void SITL_State::_update_compass(float rollDeg, float pitchDeg, float yawDeg)
 		// no compass in this sketch
 		return;
 	}
+	yawDeg += _sitl->mag_error;
+	if (yawDeg > 180.0f) {
+		yawDeg -= 360.0f;
+	}
+	if (yawDeg < -180.0f) {
+		yawDeg += 360.0f;
+	}
 	_compass->setHIL(radians(rollDeg), radians(pitchDeg), radians(yawDeg));
 	Vector3f noise = _rand_vec3f() * _sitl->mag_noise;
-	_compass->mag_x += noise.x;
-	_compass->mag_y += noise.y;
-	_compass->mag_z += noise.z;
+    Vector3f motor = _sitl->mag_mot.get() * _current;
+    _compass->setHIL(_compass->getHIL() + noise+motor);
 }
 
 #endif

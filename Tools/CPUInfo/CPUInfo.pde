@@ -1,4 +1,4 @@
-/// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: t -*-
+/// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
 /*
   test CPU speed
@@ -13,6 +13,10 @@
 #include <AP_Common.h>
 #include <AP_Baro.h>
 #include <AP_ADC.h>
+#include <AP_GPS.h>
+#include <AP_InertialSensor.h>
+#include <AP_Notify.h>
+#include <DataFlash.h>
 #include <GCS_MAVLink.h>
 #include <AP_Compass.h>
 #include <AP_Declination.h>
@@ -21,6 +25,12 @@
 #include <AP_Param.h>
 #include <AP_Progmem.h>
 #include <AP_Math.h>
+#include <AP_AHRS.h>
+#include <AP_NavEKF.h>
+#include <AP_Airspeed.h>
+#include <AP_Vehicle.h>
+#include <AP_Mission.h>
+#include <AP_ADC_AnalogSource.h>
 
 const AP_HAL::HAL& hal = AP_HAL_BOARD_DRIVER;
 
@@ -97,7 +107,8 @@ static void show_timings(void)
 	TIMEIT("fadd", v_out += v_f, 100);
 	TIMEIT("fsub", v_out -= v_f, 100);
 	TIMEIT("fmul", v_out *= v_f, 100);
-	TIMEIT("fdiv", v_out /= v_f, 100);
+	TIMEIT("fdiv /=", v_out /= v_f, 100);
+    TIMEIT("fdiv 2/x", v_out = 2.0f/v_f, 100);
 
 	TIMEIT("dadd", v_out_d += v_d, 100);
 	TIMEIT("dsub", v_out_d -= v_d, 100);

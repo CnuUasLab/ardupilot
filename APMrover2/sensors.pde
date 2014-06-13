@@ -1,5 +1,12 @@
 // -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
+static void init_barometer(void)
+{
+    gcs_send_text_P(SEVERITY_LOW, PSTR("Calibrating barometer"));    
+    barometer.calibrate();
+    gcs_send_text_P(SEVERITY_LOW, PSTR("barometer calibration complete"));
+}
+
 static void init_sonar(void)
 {
 #if CONFIG_HAL_BOARD == HAL_BOARD_APM1
@@ -11,33 +18,12 @@ static void init_sonar(void)
 #endif
 }
 
-// Sensors are not available in HIL_MODE_ATTITUDE
-#if HIL_MODE != HIL_MODE_ATTITUDE
-
-void ReadSCP1000(void) {}
-
-#endif // HIL_MODE != HIL_MODE_ATTITUDE
-
+// read_battery - reads battery voltage and current and invokes failsafe
+// should be called at 10hz
 static void read_battery(void)
 {
-	if(g.battery_monitoring == 0) {
-		battery_voltage1 = 0;
-		return;
-	}
-	
-    if(g.battery_monitoring == 3 || g.battery_monitoring == 4) {
-        // this copes with changing the pin at runtime
-        batt_volt_pin->set_pin(g.battery_volt_pin);
-        battery_voltage1 = BATTERY_VOLTAGE(batt_volt_pin);
-    }
-    if(g.battery_monitoring == 4) {
-        // this copes with changing the pin at runtime
-        batt_curr_pin->set_pin(g.battery_curr_pin);
-        current_amps1    = CURRENT_AMPS(batt_curr_pin);
-        current_total1   += current_amps1 * (float)delta_ms_medium_loop * 0.0002778;                                    // .0002778 is 1/3600 (conversion to hours)
-    }
+    battery.read();
 }
-
 
 // read the receiver RSSI as an 8 bit number for MAVLink
 // RC_CHANNELS_SCALED message
@@ -67,8 +53,8 @@ static void read_sonars(void)
                 obstacle.detected_count++;
             }
             if (obstacle.detected_count == g.sonar_debounce) {
-                gcs_send_text_fmt(PSTR("Sonar1 obstacle %.0fcm"),
-                                  obstacle.sonar1_distance_cm);
+                gcs_send_text_fmt(PSTR("Sonar1 obstacle %u cm"),
+                                  (unsigned)obstacle.sonar1_distance_cm);
             }
             obstacle.detected_time_ms = hal.scheduler->millis();
             obstacle.turn_angle = g.sonar_turn_angle;
@@ -78,8 +64,8 @@ static void read_sonars(void)
                 obstacle.detected_count++;
             }
             if (obstacle.detected_count == g.sonar_debounce) {
-                gcs_send_text_fmt(PSTR("Sonar2 obstacle %.0fcm"),
-                                  obstacle.sonar2_distance_cm);
+                gcs_send_text_fmt(PSTR("Sonar2 obstacle %u cm"),
+                                  (unsigned)obstacle.sonar2_distance_cm);
             }
             obstacle.detected_time_ms = hal.scheduler->millis();
             obstacle.turn_angle = -g.sonar_turn_angle;
@@ -94,8 +80,8 @@ static void read_sonars(void)
                 obstacle.detected_count++;
             }
             if (obstacle.detected_count == g.sonar_debounce) {
-                gcs_send_text_fmt(PSTR("Sonar obstacle %.0fcm"),
-                                  obstacle.sonar1_distance_cm);
+                gcs_send_text_fmt(PSTR("Sonar obstacle %u cm"),
+                                  (unsigned)obstacle.sonar1_distance_cm);
             }
             obstacle.detected_time_ms = hal.scheduler->millis();
             obstacle.turn_angle = g.sonar_turn_angle;
