@@ -1371,6 +1371,6 @@ def fly_CopterAVC(viewerip=None, map=False):
     util.pexpect_close(sim)
 
     if failed:
-        print("FAILED: %s" % failed_test_msg)
+        print("FAILED: %s" % e)
         return False
     return True

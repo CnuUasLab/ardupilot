@@ -7,7 +7,8 @@
 // acro_init - initialise acro controller
 static bool acro_init(bool ignore_checks)
 {
-    // always successfully enter acro
+    // clear stabilized rate errors
+    attitude_control.init_targets();
     return true;
 }
 
@@ -20,8 +21,7 @@ static void acro_run()
 
     // if motors not running reset angle targets
     if(!motors.armed() || g.rc_3.control_in <= 0) {
-        attitude_control.relax_bf_rate_controller();
-        attitude_control.set_yaw_target_to_current_heading();
+        attitude_control.init_targets();
         attitude_control.set_throttle_out(0, false);
         return;
     }
@@ -53,6 +53,7 @@ static void get_pilot_desired_angle_rates(int16_t roll_in, int16_t pitch_in, int
     rate_bf_request.x = roll_in * g.acro_rp_p;
     rate_bf_request.y = pitch_in * g.acro_rp_p;
     rate_bf_request.z = yaw_in * g.acro_yaw_p;
+    // todo: add acceleration slew
 
     // calculate earth frame rate corrections to pull the copter back to level while in ACRO mode
 

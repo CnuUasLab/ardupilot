@@ -127,8 +127,7 @@ static void rtl_climb_return_run()
     // if not auto armed set throttle to zero and exit immediately
     if(!ap.auto_armed) {
         // reset attitude control targets
-        attitude_control.relax_bf_rate_controller();
-        attitude_control.set_yaw_target_to_current_heading();
+        attitude_control.init_targets();
         attitude_control.set_throttle_out(0, false);
         // To-Do: re-initialise wpnav targets
         return;
@@ -185,8 +184,7 @@ static void rtl_loiterathome_run()
     // if not auto armed set throttle to zero and exit immediately
     if(!ap.auto_armed) {
         // reset attitude control targets
-        attitude_control.relax_bf_rate_controller();
-        attitude_control.set_yaw_target_to_current_heading();
+        attitude_control.init_targets();
         attitude_control.set_throttle_out(0, false);
         // To-Do: re-initialise wpnav targets
         return;
@@ -238,7 +236,7 @@ static void rtl_descent_start()
     rtl_state_complete = false;
 
     // Set wp navigation target to above home
-    wp_nav.init_loiter_target(wp_nav.get_wp_destination());
+    wp_nav.set_loiter_target(wp_nav.get_wp_destination());
 
     // initialise altitude target to stopping point
     pos_control.set_target_to_stopping_point_z();
@@ -253,8 +251,7 @@ static void rtl_descent_run()
 {
     // if not auto armed set throttle to zero and exit immediately
     if(!ap.auto_armed || !inertial_nav.position_ok()) {
-        attitude_control.relax_bf_rate_controller();
-        attitude_control.set_yaw_target_to_current_heading();
+        attitude_control.init_targets();
         attitude_control.set_throttle_out(0, false);
         // set target to current position
         wp_nav.init_loiter_target();
@@ -298,7 +295,7 @@ static void rtl_land_start()
     rtl_state_complete = false;
 
     // Set wp navigation target to above home
-    wp_nav.init_loiter_target(wp_nav.get_wp_destination());
+    wp_nav.set_loiter_target(wp_nav.get_wp_destination());
 
     // initialise altitude target to stopping point
     pos_control.set_target_to_stopping_point_z();
@@ -313,8 +310,7 @@ static void rtl_land_run()
 {
     // if not auto armed set throttle to zero and exit immediately
     if(!ap.auto_armed || !inertial_nav.position_ok()) {
-        attitude_control.relax_bf_rate_controller();
-        attitude_control.set_yaw_target_to_current_heading();
+        attitude_control.init_targets();
         attitude_control.set_throttle_out(0, false);
         // set target to current position
         wp_nav.init_loiter_target();

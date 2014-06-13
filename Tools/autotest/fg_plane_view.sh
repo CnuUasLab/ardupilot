@@ -8,6 +8,7 @@ nice fgfs \
     --aircraft=Rascal110-JSBSim \
     --control=mouse \
     --fg-aircraft="$AUTOTESTDIR/aircraft" \
+    --disable-intro-music \
     --airport=YKRY \
     --geometry=650x550 \
     --bpp=32 \
@@ -21,6 +22,7 @@ nice fgfs \
     --disable-ai-models \
     --fog-disable \
     --disable-specular-highlight \
+    --disable-skyblend \
     --disable-anti-alias-hud \
     --wind=0@0 \
     $*

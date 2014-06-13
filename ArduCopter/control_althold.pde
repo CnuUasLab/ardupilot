@@ -28,8 +28,7 @@ static void althold_run()
     // if not auto armed set throttle to zero and exit immediately
     if(!ap.auto_armed) {
         // To-Do: reset altitude target if we're somehow not landed?
-        attitude_control.relax_bf_rate_controller();
-        attitude_control.set_yaw_target_to_current_heading();
+        attitude_control.init_targets();
         attitude_control.set_throttle_out(0, false);
         return;
     }
@@ -57,8 +56,7 @@ static void althold_run()
 
     // reset target lean angles and heading while landed
     if (ap.land_complete) {
-        attitude_control.relax_bf_rate_controller();
-        attitude_control.set_yaw_target_to_current_heading();
+        attitude_control.init_targets();
         // move throttle to minimum to keep us on the ground
         attitude_control.set_throttle_out(0, false);
     }else{

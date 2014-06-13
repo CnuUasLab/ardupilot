@@ -302,8 +302,7 @@ static void geofence_check(bool altitude_check_only)
             geofence_state->fence_triggered = false;
             gcs_send_text_P(SEVERITY_LOW,PSTR("geo-fence OK"));
  #if FENCE_TRIGGERED_PIN > 0
-            hal.gpio->pinMode(FENCE_TRIGGERED_PIN, HAL_GPIO_OUTPUT);
-            hal.gpio->write(FENCE_TRIGGERED_PIN, 0);
+            digitalWrite(FENCE_TRIGGERED_PIN, LOW);
  #endif
             gcs_send_message(MSG_FENCE_STATUS);
         }
@@ -326,8 +325,7 @@ static void geofence_check(bool altitude_check_only)
     geofence_state->breach_type = breach_type;
 
  #if FENCE_TRIGGERED_PIN > 0
-    hal.gpio->pinMode(FENCE_TRIGGERED_PIN, HAL_GPIO_OUTPUT);
-    hal.gpio->write(FENCE_TRIGGERED_PIN, 1);
+    digitalWrite(FENCE_TRIGGERED_PIN, HIGH);
  #endif
 
     gcs_send_text_P(SEVERITY_LOW,PSTR("geo-fence triggered"));
