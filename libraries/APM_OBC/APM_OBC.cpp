@@ -92,6 +92,12 @@ const AP_Param::GroupInfo APM_OBC::var_info[] PROGMEM = {
     // @User: Advanced
     AP_GROUPINFO("QNH_PRESSURE", 10, APM_OBC, _qnh_pressure,    0),
 
+    // @Param: FAILSAFE_CH
+    // @DisplayName: Failsafe Channel Number
+    // @Description: This sets the channel used to override the failsafe and crashe the plane.  If this channel is above 1750 then the plane will crash itself! Set to -1 to disable.
+    // @User: Advanced
+    AP_GROUPINFO("FAILSAFE_CH", 10, APM_OBC, _failsafe_ch,    -1),
+
     AP_GROUPEND
 };
 
@@ -101,15 +107,15 @@ extern bool geofence_breached(void);
 // check for Failsafe conditions. This is called at 10Hz by the main
 // ArduPlane code
 void
-APM_OBC::check(APM_OBC::control_mode mode, uint32_t last_heartbeat_ms)
+APM_OBC::check(APM_OBC::control_mode mode, uint32_t last_heartbeat_ms, uint32_t last_valid_rc_ms)
 {	
 	// we always check for fence breach
-	if (geofence_breached() || check_altlimit()) {
-		if (!_terminate) {
-			hal.console->println_P(PSTR("Fence TERMINATE"));
-			_terminate.set(1);
-		}
-	}
+//	if (geofence_breached() || check_altlimit()) {
+//		if (!_terminate) {
+//			hal.console->println_P(PSTR("Fence TERMINATE"));
+//			_terminate.set(1);
+//		}
+//	}
 	
 	// tell the failsafe board if we are in manual control
 	// mode. This tells it to pass through controls from the
@@ -122,9 +128,17 @@ APM_OBC::check(APM_OBC::control_mode mode, uint32_t last_heartbeat_ms)
 		hal.gpio->write(_manual_pin, mode==OBC_MANUAL);
 	}
 
+    uint16_t pulsewidth = hal.rcin->read(_failsafe_ch - 1);
+    if(_failsafe_ch != -1) {
+        if(pulsewidth > 1750){
+            _terminate.set(1);
+        }
+    }
+
 	uint32_t now = hal.scheduler->millis();
-	bool gcs_link_ok = ((now - last_heartbeat_ms) < 10000);
-	bool gps_lock_ok = ((now - gps.last_fix_time_ms()) < 3000);
+	bool gcs_link_ok = ((now - last_heartbeat_ms) < 180000); //3 Minutes of no GCS
+	bool gps_lock_ok = ((now - gps.last_fix_time_ms()) < 3000); //1 Minutes of no GPS
+	bool rc_link_ok  = ((now - last_valid_rc_ms) < 120000); //2 Minutes of no RC
 
 	switch (_state) {
 	case STATE_PREFLIGHT:
@@ -140,6 +154,7 @@ APM_OBC::check(APM_OBC::control_mode mode, uint32_t last_heartbeat_ms)
 		// this is the normal mode. 
 		if (!gcs_link_ok) {
 			hal.console->println_P(PSTR("State DATA_LINK_LOSS"));
+            _terminate.set(1);
 			_state = STATE_DATA_LINK_LOSS;
 			if (_wp_comms_hold) {
                             	_saved_wp = mission.get_current_nav_cmd().index;
@@ -149,46 +164,53 @@ APM_OBC::check(APM_OBC::control_mode mode, uint32_t last_heartbeat_ms)
 		}
 		if (!gps_lock_ok) {
 			hal.console->println_P(PSTR("State GPS_LOSS"));
+            _terminate.set(1);
 			_state = STATE_GPS_LOSS;
 			if (_wp_gps_loss) {
-                            	_saved_wp = mission.get_current_nav_cmd().index;
+                         	_saved_wp = mission.get_current_nav_cmd().index;
 				mission.set_current_cmd(_wp_gps_loss);
 			}
 			break;
 		}
-		break;
-
-	case STATE_DATA_LINK_LOSS:
-		if (!gps_lock_ok) {
-			// losing GPS lock when data link is lost
-			// leads to termination
-			hal.console->println_P(PSTR("Dual loss TERMINATE"));
-			_terminate.set(1);
-		} else if (gcs_link_ok) {
+		if (!rc_link_ok) {
+			hal.console->println_P(PSTR("State RC_LOSS"));
+            _terminate.set(1);
+			break;
+		}
+        break;
+        
+    case STATE_MANUAL:
+        break;
+    case STATE_DATA_LINK_LOSS:
+        if (gcs_link_ok) {
 			_state = STATE_AUTO;
 			hal.console->println_P(PSTR("GCS OK"));
 			if (_saved_wp != 0) {
-                            	mission.set_current_cmd(_saved_wp);			
+                         	mission.set_current_cmd(_saved_wp);			
 				_saved_wp = 0;
 			}
 		}
-		break;
-
-	case STATE_GPS_LOSS:
-		if (!gcs_link_ok) {
-			// losing GCS link when GPS lock lost
-			// leads to termination
-			hal.console->println_P(PSTR("Dual loss TERMINATE"));
-			_terminate.set(1);
-		} else if (gps_lock_ok) {
+        break;
+    case STATE_GPS_LOSS:
+        if (gps_lock_ok) {
 			hal.console->println_P(PSTR("GPS OK"));
-			_state = STATE_AUTO;
+		    _state = STATE_AUTO;
 			if (_saved_wp != 0) {
 				mission.set_current_cmd(_saved_wp);			
 				_saved_wp = 0;
 			}
 		}
-		break;
+        break;
+    case STATE_RC_LOSS:
+        if (rc_link_ok) {
+			hal.console->println_P(PSTR("RC OK"));
+		    _state = STATE_AUTO;
+			if (_saved_wp != 0) {
+				mission.set_current_cmd(_saved_wp);			
+				_saved_wp = 0;
+			}
+		}
+        break;
 	}
 
 	// if we are not terminating or if there is a separate terminate
@@ -256,7 +278,7 @@ void APM_OBC::setup_failsafe(void)
 
     // setup primary channel output values
     hal.rcout->set_failsafe_pwm(1U<<(rcmap.roll()-1),     ch_roll->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MAX));
-    hal.rcout->set_failsafe_pwm(1U<<(rcmap.pitch()-1),    ch_pitch->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MAX));
+    hal.rcout->set_failsafe_pwm(1U<<(rcmap.pitch()-1),    ch_pitch->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MIN));
     hal.rcout->set_failsafe_pwm(1U<<(rcmap.yaw()-1),      ch_yaw->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MAX));
     hal.rcout->set_failsafe_pwm(1U<<(rcmap.throttle()-1), ch_throttle->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MIN));
 
@@ -295,7 +317,7 @@ void APM_OBC::check_crash_plane(void)
     RC_Channel *ch_throttle = RC_Channel::rc_channel(rcmap.throttle()-1);
 
     ch_roll->radio_out     = ch_roll->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MAX);
-    ch_pitch->radio_out    = ch_pitch->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MAX);
+    ch_pitch->radio_out    = ch_pitch->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MIN);
     ch_yaw->radio_out      = ch_yaw->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MAX);
     ch_throttle->radio_out = ch_throttle->get_limit_pwm(RC_Channel::RC_CHANNEL_LIMIT_MIN);
 

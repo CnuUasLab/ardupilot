@@ -44,7 +44,9 @@ public:
 		STATE_PREFLIGHT       = 0,
 		STATE_AUTO            = 1,
 		STATE_DATA_LINK_LOSS  = 2,
-		STATE_GPS_LOSS        = 3
+		STATE_GPS_LOSS        = 3,
+        STATE_RC_LOSS         = 4,
+		STATE_MANUAL          = 5
 	};
 
 	// Constructor
@@ -64,7 +66,7 @@ public:
             _saved_wp = 0;
         }
 
-	void check(enum control_mode control_mode, uint32_t last_heartbeat_ms);
+	void check(enum control_mode control_mode, uint32_t last_heartbeat_ms, uint32_t last_valid_rc_ms);
 
     // called in servo output code to set servos to crash position if needed
 	void check_crash_plane(void);
@@ -95,6 +97,9 @@ private:
 	// waypoint numbers to jump to on failsafe conditions
 	AP_Int8 _wp_comms_hold;
 	AP_Int8 _wp_gps_loss;
+
+    //Pin for failsafe overirde
+    AP_Int8 _failsafe_ch;
 
     AP_Float _qnh_pressure;
     AP_Int32 _amsl_limit;

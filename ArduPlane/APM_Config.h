@@ -21,3 +21,22 @@
  *
  */
 
+#define GPS_PROTOCOL  GPS_PROTOCOL_AUTO
+
+#define GCS_PROTOCOL		GCS_PROTOCOL_MAVLINK
+
+#define SHORT_FAILSAFE_ACTION   1
+
+#define LONG_FAILSAFE_ACTION    1
+
+#define FLIGHT_MODE_1           MANUAL
+#define FLIGHT_MODE_6           AUTO
+
+#define ELEVON_MIXING           ENABLED
+#define ELEVON_CH1_REVERSE      ENABLED
+
+# define OBC_FAILSAFE           ENABLED
+
+#define AIRSPEED_CRUISE     14
+
+#define MIN_GNDSPEED	0
